@@ -2,11 +2,8 @@
 // STM32F100C4T6B MCU
 
 #include "main.h"
-
 #include "stm32f10x.h"
-
 #include "stm32f10x_it.h"
-
 #include <stdio.h>
 
 __IO uint32_t HSEStatus = 0;
@@ -41,38 +38,10 @@ __IO uint32_t HSEStatus = 0;
 				0x09 for switch on Both Side light
 				0x12 for control message
 */
-const unsigned char RightSideOn[] = {
-    0xAA,
-    0xCC,
-    0xCC,
-    0xCC,
-    0x0A,
-    0xE8
-};
-const unsigned char LeftSideOn[] = {
-    0xAA,
-    0xCC,
-    0xCC,
-    0xCC,
-    0x33,
-    0xBF
-};
-const unsigned char BothSideOn[] = {
-    0xAA,
-    0xCC,
-    0xCC,
-    0xCC,
-    0x09,
-    0xE9
-};
-const unsigned char IamOnAir[] = {
-    0xAA,
-    0xCC,
-    0xCC,
-    0xCC,
-    0x12,
-    0xE0
-};
+const unsigned char RightSideOn[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x0A, 0xE8};
+const unsigned char LeftSideOn[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x33, 0xBF};
+const unsigned char BothSideOn[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x09, 0xE9};
+const unsigned char IamOnAir[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x12, 0xE0};
 
 void InitClock(void); // HSE Clock Init
 void InitGPIO(void); // Init GPIO
