@@ -1,1 +1,2 @@
-*.sch linguist-language=Altium Designer
+* linguist-vendored
+*.c linguist-vendored=false
