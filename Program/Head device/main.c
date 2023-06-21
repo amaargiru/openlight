@@ -30,18 +30,18 @@ __IO uint32_t HSEStatus = 0;
 #define ALARM_BUTTON_PIN GPIO_Pin_5 // Alarm & Freeze Button
 
 /* Message =	1 start byte 0xAA,
-				3 bytes device number,
-				1 bytes command,
-				1 byte check summ
-	Command =	0x0A for switch on Right Side light
-				0x33 for switch on Left Side light
-				0x09 for switch on Both Side light
-				0x12 for control message
+                3 bytes device number,
+                1 bytes command,
+                1 byte check sum
+    Command =	0x0A for switch on Right Side light
+                0x33 for switch on Left Side light
+                0x09 for switch on Both Side light
+                0x12 for control message
 */
-const unsigned char RightSideOn[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x0A, 0xE8};
-const unsigned char LeftSideOn[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x33, 0xBF};
-const unsigned char BothSideOn[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x09, 0xE9};
-const unsigned char IamOnAir[] = {0xAA, 0xCC, 0xCC, 0xCC, 0x12, 0xE0};
+const unsigned char RightSideOn[] = { 0xAA, 0xCC, 0xCC, 0xCC, 0x0A, 0xE8 };
+const unsigned char LeftSideOn[] = { 0xAA, 0xCC, 0xCC, 0xCC, 0x33, 0xBF };
+const unsigned char BothSideOn[] = { 0xAA, 0xCC, 0xCC, 0xCC, 0x09, 0xE9 };
+const unsigned char IamOnAir[] = { 0xAA, 0xCC, 0xCC, 0xCC, 0x12, 0xE0 };
 
 void InitClock(void); // HSE Clock Init
 void InitGPIO(void); // Init GPIO
@@ -83,8 +83,8 @@ void main(void) {
             if ((LRBtnState = GPIO_ReadInputDataBit(RIGHT_BUTTON_PORT, RIGHT_BUTTON_PIN)) == 0)
                 CurrentCommand = 0x01; // Switch on Right Side light
             else
-            if ((LRBtnState = GPIO_ReadInputDataBit(LEFT_BUTTON_PORT, LEFT_BUTTON_PIN)) == 0)
-                CurrentCommand = 0x02; // Switch on Left Side light
+                if ((LRBtnState = GPIO_ReadInputDataBit(LEFT_BUTTON_PORT, LEFT_BUTTON_PIN)) == 0)
+                    CurrentCommand = 0x02; // Switch on Left Side light
         }
 
         OldAFBtnState = AFBtnState;
@@ -93,8 +93,8 @@ void main(void) {
             if (CurrentCommand != 0x03)
                 CurrentCommand = 0x03; // Switch on both Right Side and Left Side light (Alarm mode)
             else
-            if (CurrentCommand == 0x03)
-                CurrentCommand = 0x00; // Exit alarm mode
+                if (CurrentCommand == 0x03)
+                    CurrentCommand = 0x00; // Exit alarm mode
         }
 
         switch (CurrentCommand) {
@@ -123,53 +123,54 @@ void main(void) {
         }
         Delay(DELAYBETWEENMESSAGES);
     }
-} // main
+}
 
 void InitClock(void) // HSE Clock Init
 {
     __IO uint32_t StartUpCounter = 0;
 
-    RCC -> CR |= ((uint32_t) RCC_CR_HSEON); // Switch to HSE oscillator
+    RCC->CR |= ((uint32_t)RCC_CR_HSEON); // Switch to HSE oscillator
     do // Wait until external HSE will be ready
     {
-        HSEStatus = RCC -> CR & RCC_CR_HSERDY;
+        HSEStatus = RCC->CR & RCC_CR_HSERDY;
         StartUpCounter++;
-    }
-    while ((HSEStatus == 0) && (StartUpCounter != HSEStartUp_TimeOut));
+    } while ((HSEStatus == 0) && (StartUpCounter != HSEStartUp_TimeOut));
 
-    if ((RCC -> CR & RCC_CR_HSERDY) != RESET)
-        HSEStatus = (uint32_t) 0x01; // HSE
+    if ((RCC->CR & RCC_CR_HSERDY) != RESET)
+        HSEStatus = (uint32_t)0x01; // HSE
     else
-        HSEStatus = (uint32_t) 0x00; // HSI
+        HSEStatus = (uint32_t)0x00; // HSI
 
-    if (HSEStatus == (uint32_t) 0x01) // HSE (External quartz)
+    if (HSEStatus == (uint32_t)0x01) // HSE (External quartz)
     {
-        RCC -> CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
-        RCC -> CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_PREDIV1 | RCC_CFGR_PLLXTPRE_PREDIV1_Div2 | RCC_CFGR_PLLMULL8);
-    } else // HSI (internal RC)
+        RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+        RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_PREDIV1 | RCC_CFGR_PLLXTPRE_PREDIV1_Div2 | RCC_CFGR_PLLMULL8);
+    }
+    else // HSI (internal RC)
     {
-        RCC -> CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
-        RCC -> CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLMULL8);
+        RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+        RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLMULL8);
         while (1) // do nothing (for debug purpose)
-        {}
+        {
+        }
     }
 
     // Start PLL
-    RCC -> CR |= RCC_CR_PLLON;
+    RCC->CR |= RCC_CR_PLLON;
     // Wait until PLL is locked
-    while ((RCC -> CR & RCC_CR_PLLRDY) == 0) {}
+    while ((RCC->CR & RCC_CR_PLLRDY) == 0) {}
     // Select PLL as system clock source
-    RCC -> CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_SW));
-    RCC -> CFGR |= (uint32_t) RCC_CFGR_SW_PLL;
+    RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
+    RCC->CFGR |= (uint32_t)RCC_CFGR_SW_PLL;
     // Wait till PLL is used as system clock source
-    while ((RCC -> CFGR & (uint32_t) RCC_CFGR_SWS) != (uint32_t) 0x08) {}
+    while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x08) {}
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // PORTA clock enable
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE); // PORTB clock enable
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE); // Alternate function clock enable
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); // UART2 clock enable
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE); // Timer 2 clock enable
-} // InitClock
+}
 
 void InitGPIO(void) // Init GPIO
 {
@@ -179,63 +180,63 @@ void InitGPIO(void) // Init GPIO
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; // Out Push-pull
-    GPIO_Init(GPIOA, & GPIO_InitStructure);
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // Configure USART2 TXD as alternate function push-pull
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP; // Alternate Function Push-pull
-    GPIO_Init(GPIOA, & GPIO_InitStructure);
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // Set PA3, PA4 and PA5 as input (Keyboard)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; // Input Pull-up
-    GPIO_Init(GPIOA, & GPIO_InitStructure);
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // Set PB12, PB13 and PB14 as output (Right side LED, Front LEDs, Left side LED)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; // Output Push-pull
-    GPIO_Init(GPIOB, & GPIO_InitStructure);
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
 
     // Set TXD USART2
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP; // Alternate Function Push-pull
-    GPIO_Init(GPIOA, & GPIO_InitStructure);
-} // InitGPIO
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+}
 
 void Delay(unsigned int Val) {
     for (; Val != 0; Val--)
         __NOP();
-} // Delay
+}
 
 int putchar(int ch) {
-    USART2 -> DR = (uint8_t) ch;
+    USART2->DR = (uint8_t)ch;
 
     // Loop until the end of transmission
     while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET) {}
     Delay(PUTCHARDELAY);
 
     return ch;
-} // putchar
+}
 
 void FrontLEDsON(void) {
     GPIO_SetBits(FRONT_LED_PORT, FRONT_LED_PIN); // Front LED On
-} // FrontLEDsON
+}
 
 void AllLEDsON(void) {
     GPIO_SetBits(FRONT_LED_PORT, FRONT_LED_PIN); // Front LED On
     GPIO_ResetBits(RIGHT_SIDE_LED_PORT, RIGHT_SIDE_LED_PIN); // Right side LED On
     GPIO_ResetBits(LEFT_SIDE_LED_PORT, LEFT_SIDE_LED_PIN); // Left side LED On
-} // AllLEDsON
+}
 
 void AllLEDsOFF(void) {
     GPIO_ResetBits(FRONT_LED_PORT, FRONT_LED_PIN); // Front LED Off
     GPIO_SetBits(RIGHT_SIDE_LED_PORT, RIGHT_SIDE_LED_PIN); // Right side LED Off
     GPIO_SetBits(LEFT_SIDE_LED_PORT, LEFT_SIDE_LED_PIN); // Left side LED Off
-} // AllLEDsOFF
+}
 
 void HelloGuys(void) // Start blinking
 {
@@ -257,7 +258,7 @@ void HelloGuys(void) // Start blinking
                 AllLEDsOFF();
 
     AllLEDsOFF();
-} // HelloGuys()
+}
 
 void InitUART(unsigned int UartSpeed) {
     USART_InitTypeDef USART_InitStructure;
@@ -269,9 +270,9 @@ void InitUART(unsigned int UartSpeed) {
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
     USART_InitStructure.USART_Mode = USART_Mode_Tx;
 
-    USART_Init(USART2, & USART_InitStructure);
+    USART_Init(USART2, &USART_InitStructure);
     USART_Cmd(USART2, ENABLE);
-} // InitUART
+}
 
 void SendMessage(const unsigned char Box[], int BoxSize) // Send Message into air
 {
@@ -279,12 +280,12 @@ void SendMessage(const unsigned char Box[], int BoxSize) // Send Message into ai
 
     for (count = 0; count < BoxSize; count++)
         putchar(Box[count]);
-} // SendMessage
+}
 
 void RF_PowerOn(void) // Switch on RF module
 {
     GPIO_SetBits(RFPOWERPORT, RFPOWERPIN1 | RFPOWERPIN2 | RFPOWERPIN3);
-} // RF_PowerOn
+}
 
 void InitNVIC(void) // Init Interrupts
 {
@@ -294,8 +295,8 @@ void InitNVIC(void) // Init Interrupts
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init( & NVIC_InitStructure);
-} // InitNVIC
+    NVIC_Init(&NVIC_InitStructure);
+}
 
 void InitTIM(void) // Init Timer
 {
@@ -305,8 +306,8 @@ void InitTIM(void) // Init Timer
     TIM_TimeBaseStructure.TIM_Prescaler = 999;
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInit(TIM2, & TIM_TimeBaseStructure);
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
     TIM_ARRPreloadConfig(TIM2, ENABLE);
     TIM_Cmd(TIM2, ENABLE);
     TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-} // InitTIM
+}

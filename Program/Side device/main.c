@@ -2,7 +2,6 @@
 // STM32F100C4T6B MCU
 
 #include "stm32f10x.h"
-
 #include "stm32f10x_it.h"
 
 #include <stdio.h>
@@ -56,7 +55,8 @@ void main(void) {
             Fall();
             Delay(600000);
             USART_Cmd(USART2, ENABLE);
-        } else {
+        }
+        else {
             GPIO_SetBits(GPIOC, GPIO_Pin_14);
             Delay(POSLIGHT);
             GPIO_ResetBits(GPIOC, GPIO_Pin_14);
@@ -69,47 +69,48 @@ void InitClock(void) // HSE Clock Init
 {
     __IO uint32_t StartUpCounter = 0;
 
-    RCC -> CR |= ((uint32_t) RCC_CR_HSEON); // Switch to HSE oscillator
+    RCC->CR |= ((uint32_t)RCC_CR_HSEON); // Switch to HSE oscillator
     do // Wait until external HSE will be ready
     {
-        HSEStatus = RCC -> CR & RCC_CR_HSERDY;
+        HSEStatus = RCC->CR & RCC_CR_HSERDY;
         StartUpCounter++;
-    }
-    while ((HSEStatus == 0) && (StartUpCounter != HSEStartUp_TimeOut));
+    } while ((HSEStatus == 0) && (StartUpCounter != HSEStartUp_TimeOut));
 
-    if ((RCC -> CR & RCC_CR_HSERDY) != RESET)
-        HSEStatus = (uint32_t) 0x01; // HSE
+    if ((RCC->CR & RCC_CR_HSERDY) != RESET)
+        HSEStatus = (uint32_t)0x01; // HSE
     else
-        HSEStatus = (uint32_t) 0x00; // HSI
+        HSEStatus = (uint32_t)0x00; // HSI
 
-    if (HSEStatus == (uint32_t) 0x01) // HSE (External quartz)
+    if (HSEStatus == (uint32_t)0x01) // HSE (External quartz)
     { // PLL configuration
-        RCC -> CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
-        RCC -> CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_PREDIV1 | RCC_CFGR_PLLXTPRE_PREDIV1_Div2 | RCC_CFGR_PLLMULL8);
-    } else // HSI (internal RC)
+        RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+        RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_PREDIV1 | RCC_CFGR_PLLXTPRE_PREDIV1_Div2 | RCC_CFGR_PLLMULL8);
+    }
+    else // HSI (internal RC)
     { // PLL configuration
-        RCC -> CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
-        RCC -> CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLMULL8);
+        RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+        RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLMULL8);
         while (1) // do nothing (for debug purpose)
-        {}
+        {
+        }
     }
 
     // Start PLL
-    RCC -> CR |= RCC_CR_PLLON;
+    RCC->CR |= RCC_CR_PLLON;
     // Wait until PLL is locked
-    while ((RCC -> CR & RCC_CR_PLLRDY) == 0) {}
+    while ((RCC->CR & RCC_CR_PLLRDY) == 0) {}
     // Select PLL as system clock source
-    RCC -> CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_SW));
-    RCC -> CFGR |= (uint32_t) RCC_CFGR_SW_PLL;
+    RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
+    RCC->CFGR |= (uint32_t)RCC_CFGR_SW_PLL;
     // Wait till PLL is used as system clock source
-    while ((RCC -> CFGR & (uint32_t) RCC_CFGR_SWS) != (uint32_t) 0x08) {}
+    while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x08) {}
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // PORTA clock enable
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE); // PORTB clock enable
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE); // PORTC clock enable
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE); // Alternate function clock enable
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); // UART2 clock enable
-} // InitClock
+}
 
 void InitGPIO(void) // Init GPIO
 {
@@ -119,32 +120,32 @@ void InitGPIO(void) // Init GPIO
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(GPIOA, & GPIO_InitStructure);
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // Configure USART2 RXD as input floating
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(GPIOA, & GPIO_InitStructure);
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // Configure USART2 TXD as alternate function push-pull
     // For debug purpose only
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_Init(GPIOA, & GPIO_InitStructure);
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // Set PC14 as output (EN_PWM)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(GPIOC, & GPIO_InitStructure);
-} // InitGPIO
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
+}
 
 void Delay(unsigned int Val) {
     for (; Val != 0; Val--)
         __NOP();
-} // Delay
+}
 
 void InitUART(unsigned int UartSpeed) {
     USART_InitTypeDef USART_InitStructure;
@@ -156,7 +157,7 @@ void InitUART(unsigned int UartSpeed) {
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
-    USART_Init(USART2, & USART_InitStructure);
+    USART_Init(USART2, &USART_InitStructure);
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE); // Enable RXD Interrupt
     USART_Cmd(USART2, ENABLE);
 } // InitUART
@@ -164,7 +165,7 @@ void InitUART(unsigned int UartSpeed) {
 void RF_PowerOn(void) // Switch on RF module
 {
     GPIO_SetBits(RFPOWERPORT, RFPOWERPIN1 | RFPOWERPIN2 | RFPOWERPIN3 | RFPOWERPIN4);
-} // RF_PowerOn
+}
 
 void InitNVIC(void) // Init Interrupts
 {
@@ -175,20 +176,20 @@ void InitNVIC(void) // Init Interrupts
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init( & NVIC_InitStructure);
-} // InitNVIC
+    NVIC_Init(&NVIC_InitStructure);
+}
 
 void AllLEDsON(void) {
     GPIO_SetBits(GPIOC, GPIO_Pin_14);
     GPIO_SetBits(GPIOC, GPIO_Pin_14);
     GPIO_SetBits(GPIOC, GPIO_Pin_14);
-} // AllLEDsON
+}
 
 void AllLEDsOFF(void) {
     GPIO_ResetBits(GPIOC, GPIO_Pin_14);
     GPIO_ResetBits(GPIOC, GPIO_Pin_14);
     GPIO_ResetBits(GPIOC, GPIO_Pin_14);
-} // AllLEDsOFF
+}
 
 void HelloGuys(void) // Start blinking
 {
@@ -210,7 +211,7 @@ void HelloGuys(void) // Start blinking
                 AllLEDsOFF();
 
     AllLEDsOFF();
-} // HelloGuys()
+}
 
 void Rise(void) // Increasing the brightness
 {
@@ -223,7 +224,7 @@ void Rise(void) // Increasing the brightness
                 GPIO_SetBits(GPIOC, GPIO_Pin_14);
             else
                 GPIO_ResetBits(GPIOC, GPIO_Pin_14);
-} // Rise()
+}
 
 void Fall(void) // Reducing the brightness
 {
@@ -237,4 +238,4 @@ void Fall(void) // Reducing the brightness
             else
                 GPIO_ResetBits(GPIOC, GPIO_Pin_14);
     GPIO_ResetBits(GPIOC, GPIO_Pin_14);
-} // Fall()
+}
